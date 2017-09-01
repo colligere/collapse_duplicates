@@ -12,11 +12,10 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     17
+// @version     18.1
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
 // @grant       GM_addStyle
-// @version	18.0
 // ==/UserScript==
 
 'use strict';
@@ -27,6 +26,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 18.1
+// - fixed: PornBay compatibility (fix by Starbuck)
 // * version 18
 // - fixed: only one torrent is visible (fix by starbuck)
 // - improvement: include variations mobile-high,mobile-medium and mobile-low
@@ -606,7 +607,7 @@ function Version(title_parser, $row, use_freeleach_icon, use_warning_icon) {
     };
 
     this._get_$title = function () {
-        return $row.find('a[href^="/torrents.php?id"]');
+        return $row.find('a[href^="torrents.php?id"], a[href^="/torrents.php?id"]');
     };
 
     this._get_$comments = function () {
