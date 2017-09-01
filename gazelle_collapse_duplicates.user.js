@@ -1,5 +1,5 @@
 ﻿// ==UserScript==
-// @name        whatcd gazelle collapse duplicates
+// @name        gazelle collapse duplicates
 // @include     /https?://www\.empornium\.(me|sx)/torrents\.php.*/
 // @exclude     /https?://www\.empornium\.(me|sx)/torrents\.php\?id.*/
 // @include     /https?://www\.empornium\.(me|sx)/user\.php.*/
