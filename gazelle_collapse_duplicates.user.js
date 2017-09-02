@@ -452,7 +452,7 @@ function TitleParser() {
     this.bitrate_additional3    = {rank: 10, regexp: /\b((?:lower|higher) bitrate)\b/ig};
     this.picsets                = {rank: 11, regexp: /\b(w images|with images|images|picture set|picsets?|imagesets?)\b/ig};
     this.request                = {rank: 12, regexp: /\b(req|request)\b/ig};
-    this.virtual_gear           = {rank: 13, regexp: /\b((?:Desktop|Smartphone|Gear|Oculus|Playstation) ?VR|Oculus ?Rift)\b/ig};
+    this.virtual_gear           = {rank: 13, regexp: /\b((?:Desktop|Smartphone|Gear|Oculus|Playstation) ?VR|Oculus ?Rift|vive)\b/ig};
     this.virtual_gear2          = {rank: 13, regexp: /\b(Samsung|Smartphone|Oculus)\b/ig};
     this.virtual_reality        = {rank: 14, regexp: /\b(Virtual ?Reality)\b/ig};
     this.games                  = {rank: 15, regexp: /\b(pc|mac)\b/ig};
