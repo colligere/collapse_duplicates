@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     18.1
+// @version     18.2
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
 // @grant       GM_addStyle
@@ -26,6 +26,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 18.2
+// - improvement: included game platforms PC and MAC
 // * version 18.1
 // - fixed: PornBay compatibility (fix by Starbuck)
 // * version 18
@@ -34,7 +36,7 @@
 // - improvement: included video containers 3gp and mpeg4
 // - change: this script is now forked on github
 // * version 17
-// - added option for freeleach icon
+// - added option for freeleech icon
 // - added option for warning icon
 // * version 16
 // - added resolutions 240, 380, 960, 1440, 1600, 1920
@@ -67,7 +69,7 @@
 // - added resolution 405
 // - added support for notifications page
 // * version 11
-// - added freeleach icon ∞
+// - added freeleech icon ∞
 // - added warning icon ⚑
 // - added option to add tags from collapsed duplicates
 // - added resolutions 272, 326, 392, 408, 450
@@ -163,7 +165,7 @@ GM_addStyle([
     '    margin-left: 20px;',
     '    margin-bottom: 2px;',
     '}',
-    '.collapsed-freeleach, .collapsed_warning {',
+    '.collapsed-freeleech, .collapsed_warning {',
     '    position: absolute;',
     '    margin-left: 5px !important;',
     '    top: 2px;',
@@ -578,17 +580,17 @@ function TitleParser() {
 
 // end TitleParser
 
-function Version(title_parser, $row, use_freeleach_icon, use_warning_icon) {
+function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
     var self = this;
 
     this.symbol_check = '✓';
     this.symbol_warning = '⚑';
     this.symbol_bookmark = '★';
-    this.symbol_freeleach = '∞';
+    this.symbol_freeleech = '∞';
 
-    this.icon_freeleach = [
+    this.icon_freeleech = [
         '<img src="static/common/symbols/freedownload.gif"',
-        'class="collapsed-freeleach"',
+        'class="collapsed-freeleech"',
         'alt="Freeleech"',
         'title="Unlimited Freeleech">'
     ].join(' ');
@@ -598,7 +600,7 @@ function Version(title_parser, $row, use_freeleach_icon, use_warning_icon) {
         '</span>'
     ].join(' ');
 
-    this.use_freeleach_icon = use_freeleach_icon;
+    this.use_freeleech_icon = use_freeleech_icon;
     this.use_warning_icon = use_warning_icon;
 
     this.$title = null;
@@ -639,7 +641,7 @@ function Version(title_parser, $row, use_freeleach_icon, use_warning_icon) {
         return $row.find('span > img[alt=bookmarked]');
     };
 
-    this._get_$freeleach_icon = function () {
+    this._get_$freeleech_icon = function () {
         return $row.find('span > img[alt=Freeleech]');
     };
 
@@ -674,7 +676,7 @@ function Version(title_parser, $row, use_freeleach_icon, use_warning_icon) {
         self.$check_icon = self._get_$check_icon();
         self.$warning_icon = self._get_$warning_icon();
         self.$bookmark_icon = self._get_$bookmark_icon();
-        self.$freeleach_icon = self._get_$freeleach_icon();
+        self.$freeleech_icon = self._get_$freeleech_icon();
         self.$download_icon = self._get_$download_icon();
 
         var title = self.$title.text();
@@ -717,11 +719,11 @@ function Version(title_parser, $row, use_freeleach_icon, use_warning_icon) {
         }
         if (self.$bookmark_icon.length)
             new_title.push(self.symbol_bookmark);
-        if (self.$freeleach_icon.length) {
-            if (self.use_freeleach_icon)
-                new_icons.push(self.icon_freeleach);
+        if (self.$freeleech_icon.length) {
+            if (self.use_freeleech_icon)
+                new_icons.push(self.icon_freeleech);
             else
-                new_title.push(self.symbol_freeleach);
+                new_title.push(self.symbol_freeleech);
         }
 
         var $new_title = self.$title.clone();
@@ -863,7 +865,7 @@ function Group(name) {
     };
 }
 
-function CollapseDuplicates(title_parser, add_missing_tags, freeleach_icon, warning_icon) {
+function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warning_icon) {
     var self = this;
 
     this.groups = {};
@@ -878,7 +880,7 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleach_icon, warn
     };
 
     this.create_group = function (_, row) {
-        var version = new Version(title_parser, jQuery(row), freeleach_icon, warning_icon);
+        var version = new Version(title_parser, jQuery(row), freeleech_icon, warning_icon);
         self.get_group(version.reduced_title).add_version(version);
     };
 
@@ -904,7 +906,7 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleach_icon, warn
 // });
 (function () {
     var add_missing_tags = false;
-    var freeleach_icon = false;
+    var freeleech_icon = false;
     var warning_icon = false;
-    new CollapseDuplicates(new TitleParser, add_missing_tags, freeleach_icon, warning_icon);
+    new CollapseDuplicates(new TitleParser, add_missing_tags, freeleech_icon, warning_icon);
 })();
