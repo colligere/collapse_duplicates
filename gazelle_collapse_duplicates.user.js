@@ -453,6 +453,7 @@ function TitleParser() {
     this.virtual_gear           = {rank: 13, regexp: /\b((?:Desktop|Smartphone|Gear|Oculus|Playstation) ?VR|Oculus ?Rift)\b/ig};
     this.virtual_gear2          = {rank: 13, regexp: /\b(Samsung|Smartphone|Oculus)\b/ig};
     this.virtual_reality        = {rank: 14, regexp: /\b(Virtual ?Reality)\b/ig};
+    this.games                  = {rank: 15, regexp: /\b(pc|mac)\b/ig};
 
     this.patterns_default = [
         this.video_containers,
@@ -471,7 +472,8 @@ function TitleParser() {
         this.request,
         this.virtual_gear,
         this.virtual_gear2,
-        this.virtual_reality
+        this.virtual_reality,
+	this.games
     ];
 
     this.patterns_for_raw = _.without(this.patterns_default, this.virtual_reality);
