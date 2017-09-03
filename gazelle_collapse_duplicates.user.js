@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     18.3
+// @version     18.4
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -27,6 +27,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 18.4
+// - improvement: added ipad variation
 // * version 18.3
 // - improvement: included vive
 // - improvement: added @updateURL metadata
@@ -448,7 +450,7 @@ function TitleParser() {
     this.resolutions_classic    = {rank:  3, regexp: /\b(\d+x\d+(?:p|i)?)\b/ig};
     this.resolutions_additional = {rank:  4, regexp: /\b(4k)\b/ig};
     this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.265\/hevc|hevc\/h\.265|h\.?265|hevc|split[- ]?scenes)\b/ig};
-    this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low)\b/ig};
+    this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low|ipad)\b/ig};
     this.fps                    = {rank:  7, regexp: /\b((?:30|60) ?fps)\b/ig};
     this.bitrate                = {rank:  8, regexp: /\b(\d+(?:\.\d+)?Mb?ps)\b/ig};
     this.bitrate_additional     = {rank:  9, regexp: /\b(bts)\b/ig};
