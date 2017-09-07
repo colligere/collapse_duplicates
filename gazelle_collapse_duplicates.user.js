@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     18.4
+// @version     19.0
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -27,6 +27,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 19
+// - improvement: collapse patterns are now category-specific
 // * version 18.4
 // - improvement: added ipad variation
 // * version 18.3
@@ -463,7 +465,7 @@ function TitleParser() {
     this.virtual_reality        = {rank: 14, regexp: /\b(Virtual ?Reality)\b/ig};
     this.games                  = {rank: 15, regexp: /\b(pc|mac)\b/ig};
 
-    this.patterns_default = [
+    this.patterns_video = [
         this.video_containers,
         this.resolutions_classic,
         this.resolutions,
@@ -480,11 +482,14 @@ function TitleParser() {
         this.request,
         this.virtual_gear,
         this.virtual_gear2,
-        this.virtual_reality,
-	this.games
+        this.virtual_reality
     ];
 
-    this.patterns_for_raw = _.without(this.patterns_default, this.virtual_reality);
+    this.patterns_games = [
+        this.games
+    ];
+
+    this.patterns_for_raw = _.without(this.patterns_video, this.virtual_reality);
 
     this.pack_mirror = {
         engine: MirrorEngine,
@@ -494,7 +499,10 @@ function TitleParser() {
             /()(\()(.+?)(\))([-, ]*)/g,
             /()(\{)(.+?)(\})([-, ]*)/g
         ],
-        patterns: self.patterns_default,
+        patterns: {
+            video: self.patterns_video,
+            games: self.patterns_games
+        },
         trimmers: self.trimmers
     };
 
@@ -503,14 +511,20 @@ function TitleParser() {
         container_patterns: [
             /(\*)/
         ],
-        patterns: self.patterns_default,
+        patterns: {
+            video: self.patterns_video,
+            games: self.patterns_games
+        },
         trimmers: self.trimmers
     };
 
     this.pack_raw = {
         engine: RawEngine,
         container_patterns: [null],
-        patterns: self.patterns_for_raw,
+        patterns: {
+            video: self.patterns_for_raw,
+            games: self.patterns_for_raw
+        },
         trimmers: self.trimmers
     };
 
@@ -518,8 +532,16 @@ function TitleParser() {
         return container.hits.length;
     };
 
-    this.parse_pack = function (title, pack) {
-        var engine = new pack.engine(pack.patterns, pack.trimmers);
+    this.parse_pack = function (title, pack, category) {
+        var match_patterns;
+
+        if (category == 'games.apps') {
+            match_patterns = pack.patterns.games;
+        } else {
+            match_patterns = pack.patterns.video;
+        }
+
+        var engine = new pack.engine(match_patterns, pack.trimmers);
         var containers = pack.container_patterns.map(function (container_pattern) {
             var result = engine.parse(title, container_pattern);
             title = result.title;
@@ -547,16 +569,16 @@ function TitleParser() {
         container.rank_min = Math.min.apply(null, ranks);
     };
 
-    this.parse = function (title) {
+    this.parse = function (title, category) {
         title = title.trim();
 
-        var mirror_result = self.parse_pack(title, self.pack_mirror);
+        var mirror_result = self.parse_pack(title, self.pack_mirror, category);
         title = mirror_result.title;
 
-        var cutting_result = self.parse_pack(title, self.pack_cutting);
+        var cutting_result = self.parse_pack(title, self.pack_cutting, category);
         title = cutting_result.title;
 
-        var raw_result = self.parse_pack(title, self.pack_raw);
+        var raw_result = self.parse_pack(title, self.pack_raw, category);
         title = raw_result.title;
 
         var containers = _.flatten([
@@ -564,8 +586,6 @@ function TitleParser() {
             cutting_result.containers,
             raw_result.containers
         ], true);
-
-        // console.log(containers);
 
         return {
             title: title,
@@ -655,6 +675,10 @@ function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
         return $row.find('span > a[href^="torrents.php?action=download"]');
     };
 
+    this._get_$category = function () {
+        return $row.find('.cats_col > div')
+    }
+
     this.apply_mp4s_workaround = function (containers) {
         var mp4s = _.findWhere(containers, {after: 's'});
         if (mp4s === undefined)
@@ -684,13 +708,12 @@ function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
         self.$bookmark_icon = self._get_$bookmark_icon();
         self.$freeleech_icon = self._get_$freeleech_icon();
         self.$download_icon = self._get_$download_icon();
+        self.$category = self._get_$category();
 
         var title = self.$title.text();
-        var result = title_parser.parse(title);
+        var category = self.$category.attr('title');
+        var result = title_parser.parse(title, category);
 
-        // todo: to fix user typos
-        // .toLowerCase()
-        // .replace(/\s+/g, '')
         self.reduced_title = result.title.replace(/\s+/g, ' ');
         self.containers = result.containers;
 
@@ -906,10 +929,6 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warn
     this.collapse_groups();
 }
 
-// jQuery('body').one('click', function() {
-//     var add_missing_tags = false;
-//     new CollapseDuplicates(new TitleParser, add_missing_tags);
-// });
 (function () {
     var add_missing_tags = false;
     var freeleech_icon = false;
