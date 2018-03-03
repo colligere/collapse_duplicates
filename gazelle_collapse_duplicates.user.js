@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     20.0
+// @version     21.0
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -26,10 +26,13 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 21
+// - Further GM4 & FF57+ fixes
+//    - fixed: The script would get executed twice when using the browser back/forward buttons (fix by sapphreak)
 // * version 20
 // - Compatibility with greasemonkey 4.0 
 //   - Replaced GM_addStyle
-//   - Removed jQuery.noConflict
+//   - Removed jQuery.noConflict (fix by sapphreak)
 // * version 19
 // - improvement: collapse patterns are now category-specific
 // * version 18.4
@@ -204,11 +207,12 @@ var css = [
 ].join('\n');
 
 // Replacement for GM_addStyle, which isn't available on greasemonkey > v4.0
-var head = document.getElementsByTagName('head')[0];
-var style = document.createElement('style');
-style.type = 'text/css';
-style.textContent = css;
-head.appendChild(style);
+function add_css(styles, id) {
+   var params = {'type': "text/css"};
+   if (id) params.id = id;
+   var element = jQuery("<style />", params).html(styles);
+   jQuery('head').append(element);
+}
 
 
 // very fast difference
@@ -942,5 +946,9 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warn
     var add_missing_tags = false;
     var freeleech_icon = false;
     var warning_icon = false;
-    new CollapseDuplicates(new TitleParser, add_missing_tags, freeleech_icon, warning_icon);
+    
+    if(!document.getElementById('collapse_duplicates')){
+       add_css(css, 'collapse_duplicates');
+       new CollapseDuplicates(new TitleParser, add_missing_tags, freeleech_icon, warning_icon);
+   }
 })();
