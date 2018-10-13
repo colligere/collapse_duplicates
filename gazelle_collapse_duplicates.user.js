@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     21.0
+// @version     23.0
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -26,6 +26,10 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 23
+// - Improved handling of VR tags
+// * version 22
+// - Removed absolute positioning for freeleech & warning icons
 // * version 21
 // - Further GM4 & FF57+ fixes
 //    - fixed: The script would get executed twice when using the browser back/forward buttons (fix by sapphreak)
@@ -180,7 +184,6 @@ var css = [
     '    margin-bottom: 2px;',
     '}',
     '.collapsed-freeleech, .collapsed_warning {',
-    '    position: absolute;',
     '    margin-left: 5px !important;',
     '    top: 2px;',
     '}',
@@ -463,7 +466,7 @@ function TitleParser() {
     this.resolutions            = {rank:  1, regexp: /\b((?:240|270|272|326|352|360|368|380|384|392|396|400|404|405|406|408|416|420|432|450|480|540|544|558|576|640|674|720|960|1072|1080|1440|1600|1920|2160)(?:p|i)?)\b\*?/ig};
     this.resolutions_images     = {rank:  2, regexp: /\b((?:1600|2000|3000)px)\b/ig};
     this.resolutions_classic    = {rank:  3, regexp: /\b(\d+x\d+(?:p|i)?)\b/ig};
-    this.resolutions_additional = {rank:  4, regexp: /\b(4k)\b/ig};
+    this.resolutions_additional = {rank:  4, regexp: /\b(4k|5k)\b/ig};
     this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.265\/hevc|hevc\/h\.265|h\.?265|hevc|split[- ]?scenes)\b/ig};
     this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low|ipad)\b/ig};
     this.fps                    = {rank:  7, regexp: /\b((?:30|60) ?fps)\b/ig};
@@ -473,10 +476,11 @@ function TitleParser() {
     this.bitrate_additional3    = {rank: 10, regexp: /\b((?:lower|higher) bitrate)\b/ig};
     this.picsets                = {rank: 11, regexp: /\b(w images|with images|images|picture set|picsets?|imagesets?)\b/ig};
     this.request                = {rank: 12, regexp: /\b(req|request)\b/ig};
-    this.virtual_gear           = {rank: 13, regexp: /\b((?:Desktop|Smartphone|Gear|Oculus|Playstation) ?VR|Oculus ?Rift|vive)\b/ig};
-    this.virtual_gear2          = {rank: 13, regexp: /\b(Samsung|Smartphone|Oculus)\b/ig};
-    this.virtual_reality        = {rank: 14, regexp: /\b(Virtual ?Reality)\b/ig};
-    this.games                  = {rank: 15, regexp: /\b(pc|mac)\b/ig};
+    this.virtual_gear           = {rank: 13, regexp: /\b(Oculus\/Go|Oculus\/vive|Oculus\/Rift)\b/ig};
+    this.virtual_gear2          = {rank: 13, regexp: /\b(Samsung|Smartphone|DayDream)\b/ig};
+    this.virtual_gear3          = {rank: 14, regexp: /\b((?:Desktop|Smartphone|Gear|Playstation) ?VR|Oculus|vive)\b/ig};
+    this.virtual_reality        = {rank: 15, regexp: /\b(Virtual ?Reality)\b/ig};
+    this.games                  = {rank: 16, regexp: /\b(pc|mac)\b/ig};
 
     this.patterns_video = [
         this.video_containers,
@@ -495,6 +499,7 @@ function TitleParser() {
         this.request,
         this.virtual_gear,
         this.virtual_gear2,
+        this.virtual_gear3,
         this.virtual_reality
     ];
 
