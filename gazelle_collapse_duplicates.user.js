@@ -470,7 +470,7 @@ function TitleParser() {
     this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.265\/hevc|hevc\/h\.265|h\.?265|hevc|split[- ]?scenes)\b/ig};
     this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low|ipad)\b/ig};
     this.fps                    = {rank:  7, regexp: /\b((?:30|60) ?fps)\b/ig};
-    this.bitrate                = {rank:  8, regexp: /\b(\d+(?:\.\d+)?Mb?ps)\b/ig};
+    this.bitrate                = {rank:  8, regexp: /\b(\d+(?:\.\d+)?[Mk]b?ps)\b/ig};
     this.bitrate_additional     = {rank:  9, regexp: /\b(bts)\b/ig};
     this.bitrate_additional2    = {rank:  9, regexp: /\b(1k|2k)\b/ig};
     this.bitrate_additional3    = {rank: 10, regexp: /\b((?:lower|higher) bitrate)\b/ig};
