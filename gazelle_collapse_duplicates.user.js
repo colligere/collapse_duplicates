@@ -467,7 +467,7 @@ function TitleParser() {
     this.resolutions_images     = {rank:  2, regexp: /\b((?:1600|2000|3000)px)\b/ig};
     this.resolutions_classic    = {rank:  3, regexp: /\b(\d+x\d+(?:p|i)?)\b/ig};
     this.resolutions_additional = {rank:  4, regexp: /\b(4k|5k)\b/ig};
-    this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.265\/hevc|hevc\/h\.265|h\.?265|hevc|x265|split[- ]?scenes)\b/ig};
+    this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.26[45]\/hevc|hevc\/h\.265|h\.?26[45]|hevc|x265|split[- ]?scenes)\b/ig};
     this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low|ipad)\b/ig};
     this.fps                    = {rank:  7, regexp: /\b((?:30|60) ?fps)\b/ig};
     this.bitrate                = {rank:  8, regexp: /\b(\d+(?:\.\d+)?[Mk]b?ps)\b/ig};
