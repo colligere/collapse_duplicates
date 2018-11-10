@@ -16,6 +16,8 @@
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
+// @grant       GM.setValue
+// @grant       GM.getValue
 // ==/UserScript==
 
 'use strict';
@@ -183,7 +185,7 @@ var css = [
     '    margin-left: 20px;',
     '    margin-bottom: 2px;',
     '}',
-    '.collapsed-freeleech, .collapsed_warning {',
+    '.collapsed-freeleech, .collapsed_warning, .collapsed_okay {',
     '    margin-left: 5px !important;',
     '    top: 2px;',
     '}',
@@ -624,7 +626,7 @@ function TitleParser() {
 
 // end TitleParser
 
-function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
+function Version(title_parser, $row, config) {
     var self = this;
 
     this.symbol_check = '✓';
@@ -643,9 +645,7 @@ function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
         'class="icon icon_warning collapsed_warning">',
         '</span>'
     ].join(' ');
-
-    this.use_freeleech_icon = use_freeleech_icon;
-    this.use_warning_icon = use_warning_icon;
+    this.icon_checked = '<span title="This torrent has been checked by staff and is okay" class="icon icon_okay collapsed_okay"></span>';
 
     this.$title = null;
     this.reduced_title = null;
@@ -756,10 +756,16 @@ function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
         var new_icons = [];
         if (self.name)
             new_title.push(self.name);
-        if (self.$check_icon.length)
-            new_title.push(self.symbol_check);
+        
+        if (self.$check_icon.length) {
+            if (config.icon_checked) {
+                new_icons.push(self.icon_checked);
+            } else {
+                new_title.push(self.symbol_check);
+            }
+        }
         if (self.$warning_icon.length) {
-            if (self.use_warning_icon)
+            if (config.icon_warning)
                 new_icons.push(self.icon_reported);
             else
                 new_title.push(self.symbol_warning);
@@ -767,7 +773,7 @@ function Version(title_parser, $row, use_freeleech_icon, use_warning_icon) {
         if (self.$bookmark_icon.length)
             new_title.push(self.symbol_bookmark);
         if (self.$freeleech_icon.length) {
-            if (self.use_freeleech_icon)
+            if (config.icon_freeleech)
                 new_icons.push(self.icon_freeleech);
             else
                 new_title.push(self.symbol_freeleech);
@@ -912,7 +918,7 @@ function Group(name) {
     };
 }
 
-function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warning_icon) {
+function CollapseDuplicates(title_parser, config) {
     var self = this;
 
     this.groups = {};
@@ -927,7 +933,7 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warn
     };
 
     this.create_group = function (_, row) {
-        var version = new Version(title_parser, jQuery(row), freeleech_icon, warning_icon);
+        var version = new Version(title_parser, jQuery(row), config);
         self.get_group(version.reduced_title).add_version(version);
     };
 
@@ -936,7 +942,7 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warn
     };
 
     this.collapse_group = function (group) {
-        group.collapse(add_missing_tags);
+        group.collapse(config.add_missing_tags);
     };
 
     this.collapse_groups = function() {
@@ -947,13 +953,204 @@ function CollapseDuplicates(title_parser, add_missing_tags, freeleech_icon, warn
     this.collapse_groups();
 }
 
-(function () {
-    var add_missing_tags = false;
-    var freeleech_icon = false;
-    var warning_icon = false;
+function CreateConfigDialog(config) {
+    var css = [
+        '.cdc_checkbox {',
+        '   margin-right: 4px',
+        '}'
+    ].join('\n');
+
+    // add general css
+    add_css(css, 'collapse_duplicates_config');
+
+    jQuery("body").prepend(
+        // config dialog background
+        jQuery('<div>', {id: 'cdc_background'})
+            .css({position:'fixed', top:0, bottom:0, left:0, right:0, 'z-index':1000, 'background-color':'rgba(50,50,50,0.6)'})
+            .html(
+                // config container
+                jQuery('<div>', {id: 'cdc_container'})
+                    .css({background:'#eee', color:'#444', position:'relative', width:'1000px', overflow:'hidden', margin:'50px auto', 'font-size':'14px', padding:'15px 20px', 'border-radius':'16px', 'box-shadow':'0 0 20px black'})
+                    .html(jQuery('<h1>').text('Collapse duplicates settings'))
+                    
+                    // the form
+                    .append(
+                        jQuery('<div>', {id: 'cdc_form_wrapper'})
+                            .css({width:'100%', overflow:'hidden', border:'1px solid #444', 'border-radius':'4px', 'border-top-left-radius': '0px', 'box-shadow':'0 -1px 10px rgba(0,0,0,0.6)'})
+                            .html(
+                                jQuery('<form>', {id: 'cdc_form'})
+                                    .css({display:'block', background:'#fff', padding:'15px'})
+                            )
+                    )
+            )
+    )    
     
+    // add actual form content
+    jQuery('#cdc_form').html(
+        jQuery('<h2>')
+            .text('Icons')
+            .css({background: 'none', 'text-align': 'left', color: '#444', padding: 0})
+    )
+
+    // freeleech icon
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Use emp style freeleech icon')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_icon_freeleech',
+                    name: 'icon_freeleech',
+                    class: 'cdc_checkbox',
+                    checked: config.config.icon_freeleech,
+                })
+            )
+    )
+
+    // warned icon
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Use emp style warned icon')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_icon_warning',
+                    name: 'icon_warning',
+                    class: 'cdc_checkbox',
+                    checked: config.config.icon_warning,
+                })
+            )
+    )
+
+    // checked label
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Use emp style checked icon')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_icon_checked',
+                    name: 'icon_checked',
+                    class: 'cdc_checkbox',
+                    checked: config.config.icon_checked,
+                })
+            )
+    )
+    
+    // torrent list
+    jQuery('#cdc_form').append(
+        jQuery('<h2>')
+            .text('Collapse settings')
+            .css({background: 'none', 'text-align': 'left', color: '#444', padding: 0})
+    )
+
+    // horizontal or vertical
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Collapse versions vertically')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_show_vertical',
+                    name: 'show_vertical',
+                    class: 'cdc_checkbox',
+                    checked: config.config.show_vertical,
+                })
+            )
+    )
+
+    // add the close button
+    jQuery('#cdc_container').append(
+        jQuery('<div>', {id: 'cdc_bottom_buttons'})
+            .css({'margin-top': '15px', width:'100%', 'text-align':'center'})
+            .html(
+                jQuery('<input>', {
+                    type: 'button',
+                    name: 'cdc_config_btn_close',
+                    value: 'Close'
+                }).on("click", function(e){
+                    e.preventDefault();
+                    jQuery('#cdc_background').remove();
+                })
+            )
+    )
+
+    // Add the save button
+    jQuery('#cdc_bottom_buttons').append(
+        jQuery('<input>', {
+            type: 'button',
+            name: 'cdc_config_btn_save',
+            value: 'Save'
+        }).on("click", function(e){
+            e.preventDefault();
+
+            jQuery('.cdc_checkbox').each(function(i, box) {
+                config.config[box.name] = box.checked;
+            })
+
+            config.save();
+            jQuery('#cdc_background').remove();
+        })
+    )
+
+}
+
+function CollapseConfig() {
+    var self = this;
+
+    this.config = {
+        icon_freeleech: false,
+        icon_warning: false,
+        icon_checked: false,
+        show_vertical: true,
+        add_missing_tags: false
+    };
+
+    this.save = function() {
+        console.log(this.config);
+        GM.setValue('collapse_duplicates_config', this.config);
+    }
+
+    this.get_config = (async function() {
+            var cfg = await GM.getValue('collapse_duplicates_config');
+
+            if (typeof cfg !== 'undefined') {
+                self.config = cfg;
+            }
+        }
+    )
+}
+
+(async function () {
     if(!document.getElementById('collapse_duplicates')){
        add_css(css, 'collapse_duplicates');
-       new CollapseDuplicates(new TitleParser, add_missing_tags, freeleech_icon, warning_icon);
+       var config = new CollapseConfig();
+
+       await config.get_config();
+
+       new CollapseDuplicates(new TitleParser, config.config);
+
+       // only on emp
+       if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx)'))) {
+            jQuery('#nav_userinfo ul').append(
+                jQuery('<li>', {
+                    id:     'cdc_open_config',
+                    html:   (
+                        jQuery('<a>')
+                            .attr('href', '#')
+                            .attr('title', 'Collapse duplicates settings')
+                            .text('Collapse duplicates')
+                            .click(function(e) {
+                                e.preventDefault();
+                                CreateConfigDialog(config);
+                            })
+                    )
+                })
+            )
+       }
    }
 })();
