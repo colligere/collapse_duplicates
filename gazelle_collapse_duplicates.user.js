@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     24.0
+// @version     24.1
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 24.1
+// - Disabled the new config options for engines that don't support GM functions
 // * version 24
 // - Added a configuration dialog (accessible through the user menu on emp)
 // - Added options to bring back the emp freeleech/warned/checked icons (off by default)
@@ -1189,13 +1191,16 @@ function CollapseConfig() {
     }
 
     this.get_config = (async function() {
-            var cfg = await GM.getValue('collapse_duplicates_config');
-
-            if (typeof cfg !== 'undefined') {
-                self.config = cfg;
-            }
+        var cfg 
+            
+        if (typeof GM != 'undefined') {
+          cfg = await GM.getValue('collapse_duplicates_config');
         }
-    )
+
+        if (typeof cfg !== 'undefined') {
+            self.config = cfg;
+        }
+    })
 }
 
 (async function () {
@@ -1207,23 +1212,25 @@ function CollapseConfig() {
 
        new CollapseDuplicates(new TitleParser, config.config);
 
-       // only on emp
-       if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx)'))) {
-            jQuery('#nav_userinfo ul').append(
-                jQuery('<li>', {
-                    id:     'cdc_open_config',
-                    html:   (
-                        jQuery('<a>')
-                            .attr('href', '#')
-                            .attr('title', 'Collapse duplicates settings')
-                            .text('Collapse duplicates')
-                            .click(function(e) {
-                                e.preventDefault();
-                                CreateConfigDialog(config);
-                            })
+       if (typeof GM != 'undefined') {
+            // only on emp
+            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx)'))) {
+                    jQuery('#nav_userinfo ul').append(
+                        jQuery('<li>', {
+                            id:     'cdc_open_config',
+                            html:   (
+                                jQuery('<a>')
+                                    .attr('href', '#')
+                                    .attr('title', 'Collapse duplicates settings')
+                                    .text('Collapse duplicates')
+                                    .click(function(e) {
+                                        e.preventDefault();
+                                        CreateConfigDialog(config);
+                                    })
+                            )
+                        })
                     )
-                })
-            )
-       }
+            }
+        }
    }
 })();
