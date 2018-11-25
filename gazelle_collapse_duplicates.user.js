@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     23.0
+// @version     24.0
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,11 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 24
+// - Added a configuration dialog (accessible through the user menu on emp)
+// - Added options to bring back the emp freeleech/warned/checked icons (off by default)
+// - Added horizontal stacking of versions (off by default)
+// - Requires 2 extra grants (GM.setValue and GM.getValue) to store settings
 // * version 23
 // - Improved handling of VR tags
 // * version 22
@@ -183,9 +188,10 @@ var css = [
     '.torrent .version .collapsed-title {',
     '    display: inline-block;',
     '    margin-left: 20px;',
-    '    margin-bottom: 2px;',
+    '    padding-top: 3px;',
+    '    vertical-align: top;',
     '}',
-    '.collapsed-freeleech, .collapsed_warning, .collapsed_okay {',
+    '.collapsed-freeleech, .collapsed_warning, .collapsed_okay, .collapsed_bookmarked {',
     '    margin-left: 5px !important;',
     '    top: 2px;',
     '}',
@@ -196,19 +202,33 @@ var css = [
     '.torrent .version:first-of-type {',
     '    padding-top: 3px;',
     '}',
+    '.torrent .version_horizontal {',
+    '    float: left;',
+    '}',
     '.torrent .tags {',
     '    padding-top: 3px;',
+    '    clear: both;',
     '}',
     '.torrent .version .comment {',
-    '    position: absolute;',
-    '    right: 0;',
     '    background-image: url("' + comment_icon + '");',
     '    background-repeat: no-repeat;',
-    '    background-position: 0 1px;',
+    '    background-position: 0 -2px;',
     '    padding-left: 19px;',
+    '    margin-left: 5px;',
     '    text-align: right;',
-    '',
-    '}'
+    '}',
+    '.torrent .version .comment_vertical {',
+    '    position: absolute;',
+    '    right: 0;',
+    '    background-position: 0 1px;',
+    '}',
+    '.torrent .horizontal_separator {',
+    '    float: none;',
+    '    margin-left: 11px;',
+    '    margin-right: 10px;',
+    '    vertical-align: super;',
+    '    color: #004DC0;',
+    '    font-weight: bold;',
 ].join('\n');
 
 // Replacement for GM_addStyle, which isn't available on greasemonkey > v4.0
@@ -646,6 +666,7 @@ function Version(title_parser, $row, config) {
         '</span>'
     ].join(' ');
     this.icon_checked = '<span title="This torrent has been checked by staff and is okay" class="icon icon_okay collapsed_okay"></span>';
+    this.icon_bookmarked = '<img src="static/styles/modern/images/star16.png" alt="bookmarked" title="You have this torrent bookmarked" class="collapsed_bookmarked">';
 
     this.$title = null;
     this.reduced_title = null;
@@ -757,26 +778,17 @@ function Version(title_parser, $row, config) {
         if (self.name)
             new_title.push(self.name);
         
-        if (self.$check_icon.length) {
-            if (config.icon_checked) {
-                new_icons.push(self.icon_checked);
-            } else {
-                new_title.push(self.symbol_check);
-            }
+        if (self.$check_icon.length && !config.icon_checked) {
+            new_title.push(self.symbol_check);
         }
-        if (self.$warning_icon.length) {
-            if (config.icon_warning)
-                new_icons.push(self.icon_reported);
-            else
-                new_title.push(self.symbol_warning);
+        if (self.$warning_icon.length && !config.icon_warning) {
+            new_title.push(self.symbol_warning);
         }
-        if (self.$bookmark_icon.length)
+        if (self.$bookmark_icon.length && !config.icon_bookmarked) {
             new_title.push(self.symbol_bookmark);
-        if (self.$freeleech_icon.length) {
-            if (config.icon_freeleech)
-                new_icons.push(self.icon_freeleech);
-            else
-                new_title.push(self.symbol_freeleech);
+        }
+        if (self.$freeleech_icon.length && !config.icon_freeleech) {
+            new_title.push(self.symbol_freeleech);
         }
 
         var $new_title = self.$title.clone();
@@ -793,6 +805,11 @@ function Version(title_parser, $row, config) {
         var link = jQuery('<a class="comment"></a>');
         link.text(self.$comments.text().trim());
         link.attr('href', self.$title.attr('href') + '#thanksdiv');
+
+        if (config.show_vertical) {
+            link.addClass('comment_vertical');
+        }
+
         return link;
     };
 
@@ -805,8 +822,28 @@ function Version(title_parser, $row, config) {
             $el.append(self.$download_icon.clone());
 
         $el.append(self._version_title());
-        if (!self.$checkbox.length && parseInt(self.$comments.text()) > 0)
+
+        if (self.$check_icon.length && config.icon_checked) {
+            $el.append(self.icon_checked);
+        }
+        if (self.$warning_icon.length && config.icon_warning) {
+            $el.append(self.icon_reported);
+        }
+        if (self.$bookmark_icon.length && config.icon_bookmarked) {
+            $el.append(self.icon_bookmarked);
+        }
+        if (self.$freeleech_icon.length && config.icon_freeleech) {
+            $el.append(self.icon_freeleech);
+        }
+
+        if (!self.$checkbox.length && parseInt(self.$comments.text()) > 0) {
             $el.append(self._comments_link());
+        }
+        
+        // support for vertical and horizontal stacking of versions
+        if (!config.show_vertical) {
+            $el.addClass('version_horizontal');
+        }
 
         return $el;
     };
@@ -892,7 +929,7 @@ function Group(name) {
         return difference_fast(hidden_tags, visible_tags, self.compare_tags);
     };
 
-    this.collapse = function (add_missing_tags) {
+    this.collapse = function (config) {
         self.collapse = null;
         var versions = self.versions.sort(self.compare_versions).reverse();
         _.invoke(versions.slice(1), 'hide');
@@ -901,12 +938,21 @@ function Group(name) {
         versions[0].$title.after(collapsed_versions);
         versions[0].$title.text(name);
         versions[0].$title.parent().find('br').remove();
+        versions[0].$title.after('<div style="clear: both; margin-bottom: 3px;"></div>');
         versions[0].$checkbox.change(function(event) {
             var checked = event.currentTarget.checked;
             _.invoke(versions.slice(1), 'toggle_checkbox', checked);
         });
 
-        if (versions.length && add_missing_tags) {
+        if (!config.show_vertical) {
+            jQuery.each(collapsed_versions, function(i, version) {
+                if (i > 0) {
+                    collapsed_versions[i].prepend('<span class="horizontal_separator"> | </span>');
+                }
+            });
+        }
+
+        if (versions.length && config.add_missing_tags) {
             var missing_tags = self._missing_tags(versions);
             if (missing_tags.length) {
                 var elements = _.pluck(missing_tags, 'elem');
@@ -942,7 +988,7 @@ function CollapseDuplicates(title_parser, config) {
     };
 
     this.collapse_group = function (group) {
-        group.collapse(config.add_missing_tags);
+        group.collapse(config);
     };
 
     this.collapse_groups = function() {
@@ -1024,7 +1070,7 @@ function CreateConfigDialog(config) {
             )
     )
 
-    // checked label
+    // checked icon
     jQuery('#cdc_form').append(
         jQuery('<label>')
             .css({display: 'block'})
@@ -1036,6 +1082,22 @@ function CreateConfigDialog(config) {
                     name: 'icon_checked',
                     class: 'cdc_checkbox',
                     checked: config.config.icon_checked,
+                })
+            )
+    )
+
+    // bookmarked icon
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Use emp style bookmarked icon')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_icon_bookmarked',
+                    name: 'icon_bookmarked',
+                    class: 'cdc_checkbox',
+                    checked: config.config.icon_bookmarked,
                 })
             )
     )
@@ -1087,13 +1149,23 @@ function CreateConfigDialog(config) {
             value: 'Save'
         }).on("click", function(e){
             e.preventDefault();
+            var reload = false;
 
             jQuery('.cdc_checkbox').each(function(i, box) {
-                config.config[box.name] = box.checked;
+                if (config.config[box.name] != box.checked) {
+                    config.config[box.name] = box.checked;
+                    reload = true;
+                }
             })
 
             config.save();
-            jQuery('#cdc_background').remove();
+
+            if (reload == true) {
+                location.reload();
+            } else {
+                jQuery('#cdc_background').remove();
+            }
+            
         })
     )
 
@@ -1106,6 +1178,7 @@ function CollapseConfig() {
         icon_freeleech: false,
         icon_warning: false,
         icon_checked: false,
+        icon_bookmarked: false,
         show_vertical: true,
         add_missing_tags: false
     };
