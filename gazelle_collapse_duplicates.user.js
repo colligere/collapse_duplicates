@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     24.1
+// @version     24.2
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 24.2
+// - Fixed compatibility with direct thumbnails script (at least in vertical layout)
 // * version 24.1
 // - Disabled the new config options for engines that don't support GM functions
 // * version 24
@@ -174,10 +176,6 @@ var css = [
     '.torrent.collapse-hidden {',
     '    display: none;',
     '}',
-    '.torrent .tags {',
-    '    padding-top: 5px;',
-    '    padding-left: 0;',
-    '}',
     '.torrent .icon {',
     '    float: none;',
     '    margin-left: 0;',
@@ -206,10 +204,6 @@ var css = [
     '}',
     '.torrent .version_horizontal {',
     '    float: left;',
-    '}',
-    '.torrent .tags {',
-    '    padding-top: 3px;',
-    '    clear: both;',
     '}',
     '.torrent .version .comment {',
     '    background-image: url("' + comment_icon + '");',
@@ -940,7 +934,11 @@ function Group(name) {
         versions[0].$title.after(collapsed_versions);
         versions[0].$title.text(name);
         versions[0].$title.parent().find('br').remove();
-        versions[0].$title.after('<div style="clear: both; margin-bottom: 3px;"></div>');
+        
+        if (!config.show_vertical) {
+          versions[0].$title.after('<div style="clear: both; margin-bottom: 3px;"></div>');
+        }
+        
         versions[0].$checkbox.change(function(event) {
             var checked = event.currentTarget.checked;
             _.invoke(versions.slice(1), 'toggle_checkbox', checked);
@@ -1205,10 +1203,25 @@ function CollapseConfig() {
 
 (async function () {
     if(!document.getElementById('collapse_duplicates')){
-       add_css(css, 'collapse_duplicates');
        var config = new CollapseConfig();
-
        await config.get_config();
+
+       if (!config.show_vertical) {
+           css += [
+            '.torrent .tags {',
+            '    padding-top: 3px;',
+            '    clear: both;',
+            '}'
+           ].join('\n');
+        } else {
+            css += [
+                '.torrent .tags {',
+                '    padding-top: 3px;',
+                '}'
+            ].join('\n');
+        }
+
+        add_css(css, 'collapse_duplicates');
 
        new CollapseDuplicates(new TitleParser, config.config);
 
