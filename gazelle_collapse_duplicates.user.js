@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     24.2
+// @version     24.3
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 24.3
+// - Some more compatibility fixes
 // * version 24.2
 // - Fixed compatibility with direct thumbnails script (at least in vertical layout)
 // * version 24.1
@@ -225,6 +227,7 @@ var css = [
     '    vertical-align: super;',
     '    color: #004DC0;',
     '    font-weight: bold;',
+    '}'
 ].join('\n');
 
 // Replacement for GM_addStyle, which isn't available on greasemonkey > v4.0
@@ -1206,13 +1209,13 @@ function CollapseConfig() {
        var config = new CollapseConfig();
        await config.get_config();
 
-       if (!config.show_vertical) {
-           css += [
+       if (!config.config.show_vertical) {
+            css += [
             '.torrent .tags {',
             '    padding-top: 3px;',
             '    clear: both;',
             '}'
-           ].join('\n');
+            ].join('\n');
         } else {
             css += [
                 '.torrent .tags {',
@@ -1220,7 +1223,7 @@ function CollapseConfig() {
                 '}'
             ].join('\n');
         }
-
+        
         add_css(css, 'collapse_duplicates');
 
        new CollapseDuplicates(new TitleParser, config.config);
