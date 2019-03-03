@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        gazelle collapse duplicates
 // @include     /https?://www\.empornium\.(me|sx)/torrents\.php.*/
 // @exclude     /https?://www\.empornium\.(me|sx)/torrents\.php\?id.*/
@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     24.3
+// @version     24.4
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 24.4
+// - Added support for new bookmark icons
 // * version 24.3
 // - Some more compatibility fixes
 // * version 24.2
@@ -227,6 +229,9 @@ var css = [
     '    vertical-align: super;',
     '    color: #004DC0;',
     '    font-weight: bold;',
+    '}',
+    '.bookmark {',
+    '    margin-left: 4px;',
     '}'
 ].join('\n');
 
@@ -702,7 +707,11 @@ function Version(title_parser, $row, config) {
     };
 
     this._get_$bookmark_icon = function () {
-        return $row.find('span > img[alt=bookmarked]');
+        return $row.find('span > i.bookmark');
+    };
+
+    this._get_$bookmarked = function () {
+        return $row.find('span > i.bookmarked');
     };
 
     this._get_$freeleech_icon = function () {
@@ -744,6 +753,7 @@ function Version(title_parser, $row, config) {
         self.$check_icon = self._get_$check_icon();
         self.$warning_icon = self._get_$warning_icon();
         self.$bookmark_icon = self._get_$bookmark_icon();
+        self.$bookmarked = self._get_$bookmarked();
         self.$freeleech_icon = self._get_$freeleech_icon();
         self.$download_icon = self._get_$download_icon();
         self.$category = self._get_$category();
@@ -783,7 +793,7 @@ function Version(title_parser, $row, config) {
         if (self.$warning_icon.length && !config.icon_warning) {
             new_title.push(self.symbol_warning);
         }
-        if (self.$bookmark_icon.length && !config.icon_bookmarked) {
+        if (self.$bookmarked.length && !config.icon_bookmarked) {
             new_title.push(self.symbol_bookmark);
         }
         if (self.$freeleech_icon.length && !config.icon_freeleech) {
@@ -829,7 +839,7 @@ function Version(title_parser, $row, config) {
             $el.append(self.icon_reported);
         }
         if (self.$bookmark_icon.length && config.icon_bookmarked) {
-            $el.append(self.icon_bookmarked);
+            $el.append(self.$bookmark_icon);
         }
         if (self.$freeleech_icon.length && config.icon_freeleech) {
             $el.append(self.icon_freeleech);
@@ -1250,3 +1260,4 @@ function CollapseConfig() {
         }
    }
 })();
+
