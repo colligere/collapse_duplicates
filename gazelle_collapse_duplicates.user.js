@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     24.4
+// @version     25
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25
+// - Updates for new emp icons
 // * version 24.4
 // - Added support for new bookmark icons
 // * version 24.3
@@ -183,15 +185,12 @@ var css = [
     '.torrent .icon {',
     '    float: none;',
     '    margin-left: 0;',
-    '    margin-top: 1px;',
     '}',
     '.torrent a[href^="torrents.php?action=download"] {',
-    '    position: absolute;',
     '    margin-left: 0;',
     '}',
     '.torrent .version .collapsed-title {',
     '    display: inline-block;',
-    '    margin-left: 20px;',
     '    padding-top: 3px;',
     '    vertical-align: top;',
     '}',
@@ -230,9 +229,17 @@ var css = [
     '    color: #004DC0;',
     '    font-weight: bold;',
     '}',
-    '.bookmark {',
-    '    margin-left: 4px;',
-    '}'
+    '.torrent_icon_container {',
+    '    display: none',
+    '}',
+    '.version .icon_stack {',
+	'    width: 18px;',
+	'    height: 22px;',
+	'    animation-play-state: paused;',
+    '}',
+    '.version .icon_stack:hover {',
+	'    animation-play-state: running;',
+    '}',
 ].join('\n');
 
 // Replacement for GM_addStyle, which isn't available on greasemonkey > v4.0
@@ -657,23 +664,10 @@ function Version(title_parser, $row, config) {
     this.symbol_warning = '⚑';
     this.symbol_bookmark = '★';
     this.symbol_freeleech = '∞';
-
-    this.icon_freeleech = [
-        '<img src="static/common/symbols/freedownload.gif"',
-        'class="collapsed-freeleech"',
-        'alt="Freeleech"',
-        'title="Unlimited Freeleech">'
-    ].join(' ');
-    this.icon_reported = [
-        '<span title="This torrent will be automatically deleted unless the uploader fixes it"',
-        'class="icon icon_warning collapsed_warning">',
-        '</span>'
-    ].join(' ');
-    this.icon_checked = '<span title="This torrent has been checked by staff and is okay" class="icon icon_okay collapsed_okay"></span>';
-    this.icon_bookmarked = '<img src="static/styles/modern/images/star16.png" alt="bookmarked" title="You have this torrent bookmarked" class="collapsed_bookmarked">';
-
     this.$title = null;
     this.reduced_title = null;
+
+    this.freeleech = false
 
     this._get_$checkbox = function () {
         return $row.find('input[type=checkbox]');
@@ -699,27 +693,33 @@ function Version(title_parser, $row, config) {
     };
 
     this._get_$check_icon = function () {
-        return $row.find('span > span.icon_okay');
+        return $row.find('.torrent_icon_container .icon_torrent_okay').parents('span');
     };
 
     this._get_$warning_icon = function () {
-        return $row.find('span > span.icon_warning');
+        return $row.find('.torrent_icon_container .icon_torrent_warned').parents('span');
     };
 
     this._get_$bookmark_icon = function () {
-        return $row.find('span > i.bookmark');
+        return $row.find('.torrent_icon_container .icon_nav_bookmarks').parents('span');
     };
 
     this._get_$bookmarked = function () {
-        return $row.find('span > i.bookmarked');
+        return $row.find('.torrent_icon_container .bookmarked').parents('span');
     };
 
     this._get_$freeleech_icon = function () {
-        return $row.find('span > img[alt=Freeleech]');
+        var fl = $row.find('.torrent_icon_container .icon_torrent_bonus').parents('span');
+
+        if (fl.find('.unlimited_leech').length) {
+            self.freeleech = true;
+        }
+
+        return fl;
     };
 
     this._get_$download_icon = function () {
-        return $row.find('span > a[href^="torrents.php?action=download"]');
+        return $row.find('.torrent_icon_container a[href^="torrents.php?action=download"]').parent();
     };
 
     this._get_$category = function () {
@@ -796,7 +796,7 @@ function Version(title_parser, $row, config) {
         if (self.$bookmarked.length && !config.icon_bookmarked) {
             new_title.push(self.symbol_bookmark);
         }
-        if (self.$freeleech_icon.length && !config.icon_freeleech) {
+        if (self.freeleech === true && !config.icon_freeleech) {
             new_title.push(self.symbol_freeleech);
         }
 
@@ -827,23 +827,24 @@ function Version(title_parser, $row, config) {
 
         var $el = jQuery('<div class="version"></div>');
 
-        if (self.$download_icon.length)
-            $el.append(self.$download_icon.clone());
-
-        $el.append(self._version_title());
-
+        if (self.$download_icon.length) {
+            $el.append(self.$download_icon);
+        }
+        if (self.$freeleech_icon.length && config.icon_freeleech) {
+            $el.append(self.$freeleech_icon);
+        }
         if (self.$check_icon.length && config.icon_checked) {
-            $el.append(self.icon_checked);
+            $el.append(self.$check_icon);
         }
         if (self.$warning_icon.length && config.icon_warning) {
-            $el.append(self.icon_reported);
+            $el.append(self.$warning_icon);
         }
         if (self.$bookmark_icon.length && config.icon_bookmarked) {
             $el.append(self.$bookmark_icon);
         }
-        if (self.$freeleech_icon.length && config.icon_freeleech) {
-            $el.append(self.icon_freeleech);
-        }
+
+        $el.append(self._version_title());
+
 
         if (!self.$checkbox.length && parseInt(self.$comments.text()) > 0) {
             $el.append(self._comments_link());
