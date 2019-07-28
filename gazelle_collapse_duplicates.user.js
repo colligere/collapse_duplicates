@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25
+// @version     25.1
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -28,6 +28,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25.1
+// - change to download URL
 // * version 25
 // - Updates for new emp icons
 // * version 24.4
@@ -186,7 +188,7 @@ var css = [
     '    float: none;',
     '    margin-left: 0;',
     '}',
-    '.torrent a[href^="torrents.php?action=download"] {',
+    '.torrent a[href^="/torrents.php?action=download"] {',
     '    margin-left: 0;',
     '}',
     '.torrent .version .collapsed-title {',
@@ -719,7 +721,7 @@ function Version(title_parser, $row, config) {
     };
 
     this._get_$download_icon = function () {
-        return $row.find('.torrent_icon_container a[href^="torrents.php?action=download"]').parent();
+        return $row.find('.torrent_icon_container a[href^="/torrents.php?action=download"]').parent();
     };
 
     this._get_$category = function () {
