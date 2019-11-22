@@ -12,12 +12,14 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25.1
+// @version     25.2
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
 // @grant       GM.setValue
 // @grant       GM.getValue
+// @grant       GM_setValue
+// @grant       GM_getValue
 // ==/UserScript==
 
 'use strict';
@@ -28,6 +30,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25.2
+// - workaround for violentmonkey bug https://github.com/violentmonkey/violentmonkey/issues/713
 // * version 25.1
 // - change to download URL
 // * version 25
