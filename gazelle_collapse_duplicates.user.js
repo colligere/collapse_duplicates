@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25.2
+// @version     25.3
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +30,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25.3
+// - support all *K resolutions
 // * version 25.2
 // - workaround for violentmonkey bug https://github.com/violentmonkey/violentmonkey/issues/713
 // * version 25.1
@@ -505,7 +507,7 @@ function TitleParser() {
     this.resolutions            = {rank:  1, regexp: /\b((?:240|270|272|326|352|360|368|380|384|392|396|400|404|405|406|408|416|420|432|450|480|540|544|558|576|640|674|720|960|1072|1080|1440|1600|1920|2160)(?:p|i)?)\b\*?/ig};
     this.resolutions_images     = {rank:  2, regexp: /\b((?:1600|2000|3000)px)\b/ig};
     this.resolutions_classic    = {rank:  3, regexp: /\b(\d+x\d+(?:p|i)?)\b/ig};
-    this.resolutions_additional = {rank:  4, regexp: /\b(4k|5k)\b/ig};
+    this.resolutions_additional = {rank:  4, regexp: /\b([0-9]+k)\b/ig};
     this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.26[45]\/hevc|hevc\/h\.265|h\.?26[45]|hevc|x265|split[- ]?scenes)\b/ig};
     this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low|ipad)\b/ig};
     this.fps                    = {rank:  7, regexp: /\b((?:30|60) ?fps)\b/ig};
