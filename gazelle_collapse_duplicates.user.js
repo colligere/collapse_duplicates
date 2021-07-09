@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25.4
+// @version     25.5
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +30,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25.5
+// - modified regexes for VR (to support occulus go) and resolutions (to support non-standard resolutions)
 // * version 25.4
 // - added empornium.is domain
 // * version 25.3
@@ -506,7 +508,7 @@ function TitleParser() {
         right:          /[-+,/ ]+$/g
     };
     this.video_containers       = {rank:  0, regexp: /\b(mp4|mkv|wmv|mov|avi|3pg|3gp|mpeg4)\b/ig};
-    this.resolutions            = {rank:  1, regexp: /\b((?:240|270|272|326|352|360|368|380|384|392|396|400|404|405|406|408|416|420|432|450|480|540|544|558|576|640|674|720|960|1072|1080|1440|1600|1920|2160)(?:p|i)?)\b\*?/ig};
+    this.resolutions            = {rank:  1, regexp: /\b([0-9]+p(?!x))\b/ig};
     this.resolutions_images     = {rank:  2, regexp: /\b((?:1600|2000|3000)px)\b/ig};
     this.resolutions_classic    = {rank:  3, regexp: /\b(\d+x\d+(?:p|i)?)\b/ig};
     this.resolutions_additional = {rank:  4, regexp: /\b([0-9]+k)\b/ig};
@@ -519,7 +521,7 @@ function TitleParser() {
     this.bitrate_additional3    = {rank: 10, regexp: /\b((?:lower|higher) bitrate)\b/ig};
     this.picsets                = {rank: 11, regexp: /\b(w images|with images|images|picture set|picsets?|imagesets?)\b/ig};
     this.request                = {rank: 12, regexp: /\b(req|request)\b/ig};
-    this.virtual_gear           = {rank: 13, regexp: /\b(Oculus\/Go|Oculus\/vive|Oculus\/Rift)\b/ig};
+    this.virtual_gear           = {rank: 13, regexp: /\b(Oculus,? Go|Oculus|Oculus\/vive|Oculus\/Rift)\b/ig};
     this.virtual_gear2          = {rank: 13, regexp: /\b(Samsung|Smartphone|DayDream)\b/ig};
     this.virtual_gear3          = {rank: 14, regexp: /\b((?:Desktop|Smartphone|Gear|Playstation) ?VR|Oculus|vive)\b/ig};
     this.virtual_reality        = {rank: 15, regexp: /\b(Virtual ?Reality)\b/ig};
