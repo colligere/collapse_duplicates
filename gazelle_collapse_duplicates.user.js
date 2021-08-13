@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25.5
+// @version     25.6
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +30,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25.6
+// - settings button now shows on the .is domain
 // * version 25.5
 // - modified regexes for VR (to support occulus go) and resolutions (to support non-standard resolutions)
 // * version 25.4
@@ -1253,7 +1255,7 @@ function CollapseConfig() {
 
        if (typeof GM != 'undefined') {
             // only on emp
-            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx)'))) {
+            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx|is)'))) {
                     jQuery('#nav_userinfo ul').append(
                         jQuery('<li>', {
                             id:     'cdc_open_config',
