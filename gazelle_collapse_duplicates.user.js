@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25.6
+// @version     25.7
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +30,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 25.7
+// - improved handling of x265
 // * version 25.6
 // - settings button now shows on the .is domain
 // * version 25.5
@@ -514,7 +516,7 @@ function TitleParser() {
     this.resolutions_images     = {rank:  2, regexp: /\b((?:1600|2000|3000)px)\b/ig};
     this.resolutions_classic    = {rank:  3, regexp: /\b(\d+x\d+(?:p|i)?)\b/ig};
     this.resolutions_additional = {rank:  4, regexp: /\b([0-9]+k)\b/ig};
-    this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.26[45]\/hevc|hevc\/h\.265|h\.?26[45]|hevc|x265|split[- ]?scenes)\b/ig};
+    this.variations             = {rank:  5, regexp: /\b(web-?dl|h\.26[45]\/hevc|hevc\/h\.265|h\.?26[45]|hevc|x\.?26[45]|split[- ]?scenes)\b/ig};
     this.variations_common      = {rank:  6, regexp: /\b(lq|sd|hd|ultrahd|fhd|uhd|hq|uhq|hi-res|mobile-high|mobile-medium|mobile-low|ipad)\b/ig};
     this.fps                    = {rank:  7, regexp: /\b((?:30|60) ?fps)\b/ig};
     this.bitrate                = {rank:  8, regexp: /\b(\d+(?:\.\d+)?[Mk]b?ps)\b/ig};
