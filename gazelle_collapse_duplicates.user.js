@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     25.7
+// @version     26.0
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +30,9 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 26.0
+// - support for pornbay
+// - new option to preserve original title
 // * version 25.7
 // - improved handling of x265
 // * version 25.6
@@ -201,9 +204,15 @@ var css = [
     '.torrent .icon {',
     '    float: none;',
     '    margin-left: 0;',
+    '    margin-top: 0;',
+    '    margin-right: 4px;',
+    '    vertical-align: bottom;',
     '}',
     '.torrent a[href^="/torrents.php?action=download"] {',
     '    margin-left: 0;',
+    '}',
+    '.torrent a[href^="torrents.php?action=download"] {',
+    '    vertical-align: bottom;',
     '}',
     '.torrent .version .collapsed-title {',
     '    display: inline-block;',
@@ -255,6 +264,10 @@ var css = [
     '}',
     '.version .icon_stack:hover {',
 	'    animation-play-state: running;',
+    '}',
+    '.version img {',
+    '    vertical-align: bottom;',
+    '    margin-right: 3px;',
     '}',
 ].join('\n');
 
@@ -709,15 +722,33 @@ function Version(title_parser, $row, config) {
     };
 
     this._get_$check_icon = function () {
-        return $row.find('.torrent_icon_container .icon_torrent_okay').parents('span');
+        if ($row.find('.torrent_icon_container .icon_torrent_okay').length > 0) {
+            return $row.find('.torrent_icon_container .icon_torrent_okay').parents('span');
+        } else if ($row.find('.icon_okay').length > 0) {
+            return $row.find('.icon_okay');
+        } else {
+            return 0;
+        }
     };
 
     this._get_$warning_icon = function () {
-        return $row.find('.torrent_icon_container .icon_torrent_warned').parents('span');
+        if ($row.find('.torrent_icon_container .icon_torrent_warned').length > 0) {
+            return $row.find('.torrent_icon_container .icon_torrent_warned').parents('span');
+        } else if ($row.find('.icon_warning').length > 0) {
+            return $row.find('.icon_warning');
+        } else {
+            return 0;
+        }
     };
 
     this._get_$bookmark_icon = function () {
-        return $row.find('.torrent_icon_container .icon_nav_bookmarks').parents('span');
+        if ($row.find('.torrent_icon_container .icon_nav_bookmarks').length > 0) {
+            return $row.find('.torrent_icon_container .icon_nav_bookmarks').parents('span');
+        } else if ($row.find('img[alt^=bookmarked]').length > 0) {
+            return $row.find('img[alt^=bookmarked]');
+        } else {
+            return 0;
+        }
     };
 
     this._get_$bookmarked = function () {
@@ -727,15 +758,29 @@ function Version(title_parser, $row, config) {
     this._get_$freeleech_icon = function () {
         var fl = $row.find('.torrent_icon_container .icon_torrent_bonus').parents('span');
 
-        if (fl.find('.unlimited_leech').length) {
-            self.freeleech = true;
+        if (fl.length > 0) { // emp style
+            if (fl.find('.unlimited_leech').length) {
+                self.freeleech = true;
+            }
+            return fl;
+        } else { // vanilla Gazelle style
+            if ($row.find('img[alt^=Freeleech]').length > 0) {
+                self.freeleech = true;
+                return $row.find('img[alt^=Freeleech]');
+            }
         }
-
-        return fl;
+        
+        return 0;
     };
 
     this._get_$download_icon = function () {
-        return $row.find('.torrent_icon_container a[href^="/torrents.php?action=download"]').parent();
+        if ($row.find('a[href^="/torrents.php?action=download"]').length > 0) { // emp style
+            return $row.find('a[href^="/torrents.php?action=download"]').parent();
+        } else if ($row.find('a[href^="torrents.php?action=download"]').length > 0) { // vanilla Gazelle style
+            return $row.find('a[href^="torrents.php?action=download"]');
+        } else {
+            return 0;
+        }
     };
 
     this._get_$category = function () {
@@ -962,7 +1007,9 @@ function Group(name) {
 
         var collapsed_versions = _.invoke(versions, 'collapse');
         versions[0].$title.after(collapsed_versions);
-        versions[0].$title.text(name);
+        if ( ! config.preserve_title) {
+            versions[0].$title.text(name);
+        }
         versions[0].$title.parent().find('br').remove();
         
         if (!config.show_vertical) {
@@ -974,6 +1021,7 @@ function Group(name) {
             _.invoke(versions.slice(1), 'toggle_checkbox', checked);
         });
 
+        console.log(config)
         if (!config.show_vertical) {
             jQuery.each(collapsed_versions, function(i, version) {
                 if (i > 0) {
@@ -1065,14 +1113,14 @@ function CreateConfigDialog(config) {
     jQuery('#cdc_form').html(
         jQuery('<h2>')
             .text('Icons')
-            .css({background: 'none', 'text-align': 'left', color: '#444', padding: 0})
+            .css({background: 'none', 'text-align': 'left', 'color': '#444', 'padding': 0, 'padding-left': '7px'})
     )
 
     // freeleech icon
     jQuery('#cdc_form').append(
         jQuery('<label>')
             .css({display: 'block'})
-            .text('Use emp style freeleech icon')
+            .text('Use native freeleech icon')
             .prepend(
                 jQuery('<input>', {
                     type: 'checkbox',
@@ -1088,7 +1136,7 @@ function CreateConfigDialog(config) {
     jQuery('#cdc_form').append(
         jQuery('<label>')
             .css({display: 'block'})
-            .text('Use emp style warned icon')
+            .text('Use native warned icon')
             .prepend(
                 jQuery('<input>', {
                     type: 'checkbox',
@@ -1104,7 +1152,7 @@ function CreateConfigDialog(config) {
     jQuery('#cdc_form').append(
         jQuery('<label>')
             .css({display: 'block'})
-            .text('Use emp style checked icon')
+            .text('Use native checked icon')
             .prepend(
                 jQuery('<input>', {
                     type: 'checkbox',
@@ -1120,7 +1168,7 @@ function CreateConfigDialog(config) {
     jQuery('#cdc_form').append(
         jQuery('<label>')
             .css({display: 'block'})
-            .text('Use emp style bookmarked icon')
+            .text('Use native bookmarked icon')
             .prepend(
                 jQuery('<input>', {
                     type: 'checkbox',
@@ -1136,7 +1184,7 @@ function CreateConfigDialog(config) {
     jQuery('#cdc_form').append(
         jQuery('<h2>')
             .text('Collapse settings')
-            .css({background: 'none', 'text-align': 'left', color: '#444', padding: 0})
+            .css({background: 'none', 'text-align': 'left', 'color': '#444', 'padding': 0, 'padding-left': '7px'})
     )
 
     // horizontal or vertical
@@ -1151,6 +1199,22 @@ function CreateConfigDialog(config) {
                     name: 'show_vertical',
                     class: 'cdc_checkbox',
                     checked: config.config.show_vertical,
+                })
+            )
+    )
+
+    // preserve titles
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Preserve titles')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_preserve_titles',
+                    name: 'preserve_title',
+                    class: 'cdc_checkbox',
+                    checked: config.config.preserve_title,
                 })
             )
     )
@@ -1210,11 +1274,11 @@ function CollapseConfig() {
         icon_checked: false,
         icon_bookmarked: false,
         show_vertical: true,
-        add_missing_tags: false
+        add_missing_tags: false,
+        preserve_title: false
     };
 
     this.save = function() {
-        console.log(this.config);
         GM.setValue('collapse_duplicates_config', this.config);
     }
 
@@ -1256,8 +1320,7 @@ function CollapseConfig() {
        new CollapseDuplicates(new TitleParser, config.config);
 
        if (typeof GM != 'undefined') {
-            // only on emp
-            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx|is)'))) {
+            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx|is)'))) { // emp config
                     jQuery('#nav_userinfo ul').append(
                         jQuery('<li>', {
                             id:     'cdc_open_config',
@@ -1273,6 +1336,22 @@ function CollapseConfig() {
                             )
                         })
                     )
+            } else if (window.location.href.match(new RegExp('https?://(www\.)?pornbay\.(org)'))) { // pornbay config
+                jQuery('#nav_inbox').parent().append(
+                    jQuery('<li>', {
+                        id:     'cdc_open_config',
+                        html:   (
+                            jQuery('<a>')
+                                .attr('href', '#')
+                                .attr('title', 'Collapse duplicates settings')
+                                .text('Collapse duplicates')
+                                .click(function(e) {
+                                    e.preventDefault();
+                                    CreateConfigDialog(config);
+                                })
+                        )
+                    }).addClass('normal potato-menu-item')
+                )
             }
         }
    }
