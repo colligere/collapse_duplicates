@@ -12,7 +12,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     26.0
+// @version     26.1
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +30,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 26.1
+// - Added PSVR variant
 // * version 26.0
 // - support for pornbay
 // - new option to preserve original title
@@ -538,7 +540,7 @@ function TitleParser() {
     this.bitrate_additional3    = {rank: 10, regexp: /\b((?:lower|higher) bitrate)\b/ig};
     this.picsets                = {rank: 11, regexp: /\b(w images|with images|images|picture set|picsets?|imagesets?)\b/ig};
     this.request                = {rank: 12, regexp: /\b(req|request)\b/ig};
-    this.virtual_gear           = {rank: 13, regexp: /\b(Oculus,? Go|Oculus|Oculus\/vive|Oculus\/Rift)\b/ig};
+    this.virtual_gear           = {rank: 13, regexp: /\b(Oculus,? Go|Oculus|Oculus\/vive|Oculus\/Rift|PSVR)\b/ig};
     this.virtual_gear2          = {rank: 13, regexp: /\b(Samsung|Smartphone|DayDream)\b/ig};
     this.virtual_gear3          = {rank: 14, regexp: /\b((?:Desktop|Smartphone|Gear|Playstation) ?VR|Oculus|vive)\b/ig};
     this.virtual_reality        = {rank: 15, regexp: /\b(Virtual ?Reality)\b/ig};
