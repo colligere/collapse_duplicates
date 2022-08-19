@@ -12,7 +12,10 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     26.1
+// @include     /https?://(www\.)?enthralled\.me/torrents\.php.*/
+// @exclude     /https?://(www\.)?enthralled\.me/torrents\.php\?id.*/
+// @include     /https?://(www\.)?enthralled\.me/user\.php.*/
+// @version     26.2
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -30,6 +33,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 26.2
+// - Added support for enthralled.me
 // * version 26.1
 // - Added PSVR variant
 // * version 26.0
@@ -1322,7 +1327,7 @@ function CollapseConfig() {
        new CollapseDuplicates(new TitleParser, config.config);
 
        if (typeof GM != 'undefined') {
-            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx|is)'))) { // emp config
+            if (window.location.href.match(new RegExp('https?://www\.empornium\.(me|sx|is)')) || window.location.href.match(new RegExp('https?://(www\.)?enthralled\.(me)'))) { // emp/ent config
                     jQuery('#nav_userinfo ul').append(
                         jQuery('<li>', {
                             id:     'cdc_open_config',
