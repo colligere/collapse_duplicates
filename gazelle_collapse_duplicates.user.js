@@ -15,7 +15,7 @@
 // @include     /https?://(www\.)?enthralled\.me/torrents\.php.*/
 // @exclude     /https?://(www\.)?enthralled\.me/torrents\.php\?id.*/
 // @include     /https?://(www\.)?enthralled\.me/user\.php.*/
-// @version     26.2
+// @version     27.0
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -33,6 +33,8 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
+// * version 27.0
+// - Added an option to collapse chronologically (you'll see the group in the newest post's location)
 // * version 26.2
 // - Added support for enthralled.me
 // * version 26.1
@@ -77,7 +79,7 @@
 // - Further GM4 & FF57+ fixes
 //    - fixed: The script would get executed twice when using the browser back/forward buttons (fix by sapphreak)
 // * version 20
-// - Compatibility with greasemonkey 4.0 
+// - Compatibility with greasemonkey 4.0
 //   - Replaced GM_addStyle
 //   - Removed jQuery.noConflict (fix by sapphreak)
 // * version 19
@@ -776,7 +778,7 @@ function Version(title_parser, $row, config) {
                 return $row.find('img[alt^=Freeleech]');
             }
         }
-        
+
         return 0;
     };
 
@@ -792,6 +794,10 @@ function Version(title_parser, $row, config) {
 
     this._get_$category = function () {
         return $row.find('.cats_col > div')
+    }
+
+    this._get_$timestamp = function () {
+        return Date.parse($row.find('.time').attr('alt'))
     }
 
     this.apply_mp4s_workaround = function (containers) {
@@ -825,12 +831,15 @@ function Version(title_parser, $row, config) {
         self.$freeleech_icon = self._get_$freeleech_icon();
         self.$download_icon = self._get_$download_icon();
         self.$category = self._get_$category();
+        self.$timestamp = self._get_$timestamp();
 
         var title = self.$title.text();
         var category = self.$category.attr('title');
         var result = title_parser.parse(title, category);
 
         self.reduced_title = result.title.replace(/\s+/g, ' ');
+      //  self.minimal_title = result.title.replace(/[^a-zA-Z0-9]/g, '');
+
         self.containers = result.containers;
 
         self.containers.forEach(title_parser.add_rank_boundaries);
@@ -854,7 +863,7 @@ function Version(title_parser, $row, config) {
         var new_icons = [];
         if (self.name)
             new_title.push(self.name);
-        
+
         if (self.$check_icon.length && !config.icon_checked) {
             new_title.push(self.symbol_check);
         }
@@ -917,7 +926,7 @@ function Version(title_parser, $row, config) {
         if (!self.$checkbox.length && parseInt(self.$comments.text()) > 0) {
             $el.append(self._comments_link());
         }
-        
+
         // support for vertical and horizontal stacking of versions
         if (!config.show_vertical) {
             $el.addClass('version_horizontal');
@@ -1009,7 +1018,14 @@ function Group(name) {
 
     this.collapse = function (config) {
         self.collapse = null;
-        var versions = self.versions.sort(self.compare_versions).reverse();
+        var versions = {};
+
+        if ( ! config.sort_chronological) {
+            versions = self.versions.sort(self.compare_versions).reverse();
+        } else {
+            versions = self.versions
+        }
+
         _.invoke(versions.slice(1), 'hide');
 
         var collapsed_versions = _.invoke(versions, 'collapse');
@@ -1018,17 +1034,16 @@ function Group(name) {
             versions[0].$title.text(name);
         }
         versions[0].$title.parent().find('br').remove();
-        
+
         if (!config.show_vertical) {
           versions[0].$title.after('<div style="clear: both; margin-bottom: 3px;"></div>');
         }
-        
+
         versions[0].$checkbox.change(function(event) {
             var checked = event.currentTarget.checked;
             _.invoke(versions.slice(1), 'toggle_checkbox', checked);
         });
 
-        console.log(config)
         if (!config.show_vertical) {
             jQuery.each(collapsed_versions, function(i, version) {
                 if (i > 0) {
@@ -1103,7 +1118,7 @@ function CreateConfigDialog(config) {
                 jQuery('<div>', {id: 'cdc_container'})
                     .css({background:'#eee', color:'#444', position:'relative', width:'1000px', overflow:'hidden', margin:'50px auto', 'font-size':'14px', padding:'15px 20px', 'border-radius':'16px', 'box-shadow':'0 0 20px black'})
                     .html(jQuery('<h1>').text('Collapse duplicates settings'))
-                    
+
                     // the form
                     .append(
                         jQuery('<div>', {id: 'cdc_form_wrapper'})
@@ -1114,8 +1129,8 @@ function CreateConfigDialog(config) {
                             )
                     )
             )
-    )    
-    
+    )
+
     // add actual form content
     jQuery('#cdc_form').html(
         jQuery('<h2>')
@@ -1186,7 +1201,7 @@ function CreateConfigDialog(config) {
                 })
             )
     )
-    
+
     // torrent list
     jQuery('#cdc_form').append(
         jQuery('<h2>')
@@ -1222,6 +1237,22 @@ function CreateConfigDialog(config) {
                     name: 'preserve_title',
                     class: 'cdc_checkbox',
                     checked: config.config.preserve_title,
+                })
+            )
+    )
+
+    // sort chronological
+    jQuery('#cdc_form').append(
+        jQuery('<label>')
+            .css({display: 'block'})
+            .text('Sort chronological (instead of alphabetical)')
+            .prepend(
+                jQuery('<input>', {
+                    type: 'checkbox',
+                    id: 'cdc_config_opt_sort_chronological',
+                    name: 'sort_chronological',
+                    class: 'cdc_checkbox',
+                    checked: config.config.sort_chronological,
                 })
             )
     )
@@ -1266,7 +1297,7 @@ function CreateConfigDialog(config) {
             } else {
                 jQuery('#cdc_background').remove();
             }
-            
+
         })
     )
 
@@ -1282,7 +1313,8 @@ function CollapseConfig() {
         icon_bookmarked: false,
         show_vertical: true,
         add_missing_tags: false,
-        preserve_title: false
+        preserve_title: false,
+        sort_chronological: false
     };
 
     this.save = function() {
@@ -1290,8 +1322,8 @@ function CollapseConfig() {
     }
 
     this.get_config = (async function() {
-        var cfg 
-            
+        var cfg
+
         if (typeof GM != 'undefined') {
           cfg = await GM.getValue('collapse_duplicates_config');
         }
@@ -1321,7 +1353,7 @@ function CollapseConfig() {
                 '}'
             ].join('\n');
         }
-        
+
         add_css(css, 'collapse_duplicates');
 
        new CollapseDuplicates(new TitleParser, config.config);
@@ -1363,4 +1395,3 @@ function CollapseConfig() {
         }
    }
 })();
-
