@@ -4,8 +4,8 @@
 // @exclude     /https?://www\.empornium\.(me|sx|is)/torrents\.php\?id.*/
 // @include     /https?://www\.empornium\.(me|sx|is)/user\.php.*/
 // @include     /https?://emparadise\.rs/torrents\.php.*/
-// @exclude     /https?://emparadise\.rs//torrents\.php\?id.*/
-// @include     /https?://emparadise\.rs//user\.php.*/
+// @exclude     /https?://emparadise\.rs/torrents\.php\?id.*/
+// @include     /https?://emparadise\.rs/user\.php.*/
 // @include     /https?://femdomcult\.org/torrents\.php.*/
 // @exclude     /https?://femdomcult\.org/torrents\.php\?id.*/
 // @include     /https?://femdomcult\.org/user\.php.*/
@@ -15,7 +15,7 @@
 // @include     /https?://pornbay\.org/torrents\.php.*/
 // @exclude     /https?://pornbay\.org/torrents\.php\?id.*/
 // @include     /https?://pornbay\.org/user\.php.*/
-// @version     27.1
+// @version     27.2
 // @updateURL   https://github.com/colligere/collapse_duplicates/raw/master/gazelle_collapse_duplicates.user.js
 // @require     http://code.jquery.com/jquery-2.1.1.js
 // @require     https://raw.githubusercontent.com/jashkenas/underscore/1.8.3/underscore.js
@@ -33,7 +33,9 @@
 // The original version of this script was written by node998 but hasn't been maintained in a while. I have now forked the script on github to incorporate some recent fixes and additions.
 
 // Changelog:
-// * version 27.0
+// * version 27.2
+// - Fixed excludes for emparadise
+// * version 27.1
 // - Added emparadise.rs
 // - Removed enthralled.me
 // * version 27.0
